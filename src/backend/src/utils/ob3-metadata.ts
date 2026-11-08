@@ -129,8 +129,25 @@ export function subjectClaims(metadata: ObjectValue | undefined) {
   if (tag?.length) out.narrative = `Programa o evento: ${tag.join('; ')}`
   return out
 }
-export function issuerProfile(strapi: any, did: string) {
+/**
+ * OB 3.0 issuer Profile. An organization with its own DID (profile.didSlug,
+ * decision 0005) is described by its own profile row: name, https site and
+ * image. Address is omitted for organizations: the platform's ISSUER_PROFILE_*
+ * describe the platform only and are never put on another organization's name.
+ */
+export function issuerProfile(strapi: any, did: string, profile?: any) {
   const base = (process.env.PUBLIC_URL || strapi.config.get('server.url') || '').replace(/\/$/, '')
+  if (profile?.didSlug) {
+    const image = profile.image?.url
+      ? (String(profile.image.url).startsWith('http') ? httpsUrl(profile.image.url, 'issuer.image') : `${base}${profile.image.url}`)
+      : undefined
+    return {
+      id: did, type: ['Profile'],
+      name: text(profile.name, 'issuer.name'),
+      ...(profile.url ? { url: httpsUrl(profile.url, 'issuer.url') } : {}),
+      ...(image ? { image: { id: image, type: 'Image' } } : {}),
+    }
+  }
   const address = text(process.env.ISSUER_PROFILE_ADDRESS || 'Jalisco, MX', 'ISSUER_PROFILE_ADDRESS', 200).split(',').map(s => s.trim())
   if (address.length !== 2 || !address[0] || !/^[A-Z]{2}$/.test(address[1])) fail('ISSUER_PROFILE_ADDRESS', 'debe tener el formato Región, CC')
   // Local HTTP origins remain possible for isolated QA, never for configured

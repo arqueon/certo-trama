@@ -916,8 +916,8 @@
       "issuer": {
         "verified": "Verified issuer",
         "declared": "Issuer",
-        "domainBefore": "This credential is signed with the digital identity of the domain",
-        "domainAfter": ", which the issuer runs. So anyone can check who issued it and that nobody changed it, without asking anyone.",
+        "domainBefore": "This credential is signed with a digital identity of the issuer, published on the domain",
+        "domainAfter": ". So anyone can check who issued it and that nobody changed it, without asking anyone.",
         "noDomain": "This credential is digitally signed by its issuer.",
         "signature": "Signature:",
         "signature_ok": "authentic; nobody has changed it.",

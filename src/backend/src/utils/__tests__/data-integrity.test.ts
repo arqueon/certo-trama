@@ -36,10 +36,11 @@ describe('did:web and Data Integrity interoperability', () => {
     process.env.ISSUER_DID_WEB_PROFILE_ID = '9'
     try {
       const findMany = jest.fn().mockResolvedValue([])
-      const strapi = { db: { query: () => ({ findMany }) } }
+      const findOne = jest.fn().mockResolvedValue(null)
+      const strapi = { db: { query: () => ({ findMany, findOne }) } }
       expect(issuerDid(strapi)).toBe('did:web:badges.example.test')
-      expect(() => assertIssuerProfile(3)).toThrow('not authorized')
-      expect(() => assertIssuerProfile(9)).not.toThrow()
+      await expect(assertIssuerProfile(strapi, 3)).rejects.toThrow('not authorized')
+      await expect(assertIssuerProfile(strapi, 9)).resolves.toBeUndefined()
       expect((await issuerDidDocument(strapi)).verificationMethod).toEqual([])
       expect(findMany).toHaveBeenCalledWith(expect.objectContaining({
         select: ['id', 'publicKeyJwk'], where: { status: { $in: ['active', 'retired'] }, profile: '9' },

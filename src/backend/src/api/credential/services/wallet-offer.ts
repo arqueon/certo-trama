@@ -1,6 +1,6 @@
 import { randomBytes, randomUUID, createHash } from 'node:crypto'
 import { signCredential, verifyCredentialStatus, verifyDataIntegrity, verificationLoader } from '../../../utils/data-integrity'
-import { issuerDid } from '../../../utils/issuer-did'
+import { isLocalDid } from '../../../utils/issuer-did'
 import { verifyWalletPresentation } from '../../../utils/wallet-presentation'
 import { walletName, type WalletClient } from './holder-wallets'
 import { webWalletLink } from './wallet-landing'
@@ -30,7 +30,7 @@ export default ({ strapi }) => ({
   async eligible(credential: any) {
     if (!walletFormat(credential)) return false
     const vc = credential.signedCredential
-    if (credential.revoked || (vc.issuer?.id || vc.issuer) !== issuerDid(strapi)
+    if (credential.revoked || !isLocalDid(strapi, vc.issuer?.id || vc.issuer)
       || (vc.validUntil && Date.parse(vc.validUntil) <= Date.now())
       || (vc.validFrom && Date.parse(vc.validFrom) > Date.now())) return false
     return (await verifyDataIntegrity(vc, await verificationLoader(strapi, vc))).valid
