@@ -6,7 +6,7 @@ import { achievementClaims, subjectClaims, issuerProfile } from '../../../utils/
 import { resolveDidWeb } from '../../../utils/did-web';
 import { documentMismatches } from '../../../utils/signed-content'
 import { createRecipientIdentity } from '../../../utils/recipient-identity'
-import { issuerDid, issuerDidDocument } from '../../../utils/issuer-did'
+import { isLocalDid, issuerDidDocument, profileDid } from '../../../utils/issuer-did'
 import { verifyDataIntegrity, verificationLoader, verifyCredentialStatus } from '../../../utils/data-integrity'
 
 /**
@@ -372,7 +372,7 @@ export default ({ strapi }) => ({
   async resolveDid(didUrl) {
     try {
       if (didUrl.startsWith('did:web:')) {
-        if (didUrl.split('#')[0] === issuerDid(strapi)) return await issuerDidDocument(strapi);
+        if (isLocalDid(strapi, didUrl)) return await issuerDidDocument(strapi, didUrl);
         return await resolveDidWeb(didUrl);
       }
 
@@ -461,6 +461,9 @@ export default ({ strapi }) => ({
       // Base URL for this application
       const baseUrl = strapi.config.get('server.url') || 'http://localhost:1337'
       const fresh = newIssuance
+      // Each organization signs with its own DID (decision 0005); profiles without
+      // one keep the platform DID.
+      const signingDid = fresh ? profileDid(strapi, credential.issuer) : undefined
       if (!fresh && !credential.proof?.length) {
         throw new Error('Credential has no saved signed document or proof; reissue it explicitly')
       }
@@ -474,7 +477,7 @@ export default ({ strapi }) => ({
         id: credential.credentialId,
         type: ['VerifiableCredential', 'OpenBadgeCredential'],
         issuer: {
-          id: fresh ? issuerDid(strapi) : `${baseUrl}/api/profiles/${credential.issuer.id}/issuer`,
+          id: fresh ? signingDid : `${baseUrl}/api/profiles/${credential.issuer.id}/issuer`,
           type: ['Profile'],
           name: credential.issuer.name,
           url: credential.issuer.url
@@ -542,7 +545,7 @@ export default ({ strapi }) => ({
       }
       
       if (fresh) {
-        obCredential.issuer = issuerProfile(strapi, issuerDid(strapi))
+        obCredential.issuer = issuerProfile(strapi, signingDid!, credential.issuer)
         const subject = obCredential.credentialSubject
         Object.assign(subject, subjectClaims(credential.subjectMetadata0023))
         if (subject.name) subject.identifier.push({ type: 'IdentityObject', identityType: 'name', hashed: false, identityHash: subject.name })
@@ -631,7 +634,7 @@ export default ({ strapi }) => ({
    */
   async importCredential(vcData) {
     try {
-      if ((vcData.issuer?.id || vcData.issuer) === issuerDid(strapi)) {
+      if (isLocalDid(strapi, vcData.issuer?.id || vcData.issuer)) {
         throw new Error('Credentials from a local issuer cannot be imported');
       }
       // Validate that this is an Open Badge Credential

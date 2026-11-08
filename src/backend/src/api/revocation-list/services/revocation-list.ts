@@ -5,7 +5,7 @@
 import { factories } from '@strapi/strapi'
 import { errors } from '@strapi/utils'
 import crypto from 'crypto'
-import { issuerDid } from '../../../utils/issuer-did'
+import { issuerDidFor } from '../../../utils/issuer-did'
 import { signCredential } from '../../../utils/data-integrity'
 const { ApplicationError } = errors
 
@@ -44,7 +44,7 @@ export const revocationListExtension = ({ strapi }: { strapi: any }) => ({
       list: await decodeList({ encodedList: statusList.encodedList }),
       statusPurpose: statusList.statusPurpose || 'revocation', context: VC_BSL_VC_V2_CONTEXT,
     })
-    credential.issuer = issuerDid(strapi)
+    credential.issuer = await issuerDidFor(strapi, statusList.issuer.id)
     credential.validFrom = new Date(statusList.lastUpdated).toISOString()
     return signCredential(strapi, statusList.issuer.id, credential)
   },

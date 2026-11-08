@@ -6,7 +6,7 @@ import { errors } from '@strapi/utils';
 import { credentialsVerifiedTotal } from '../../../monitoring/metrics';
 import { storedCredentialMismatches } from '../../../utils/signed-content';
 import { verificationLoader, verifyDataIntegrity } from '../../../utils/data-integrity';
-import { issuerDid } from '../../../utils/issuer-did';
+import { isLocalDid } from '../../../utils/issuer-did';
 const { ApplicationError } = errors;
 
 // Define interface for credential with all required properties
@@ -239,7 +239,7 @@ export default {
         if (!result.valid) return result;
         // A root DID can contain multiple institutional profiles. The local
         // row must still belong to the profile that actually signed it.
-        if ((document.issuer?.id || document.issuer) === issuerDid(strapi)) {
+        if (isLocalDid(strapi, document.issuer?.id || document.issuer)) {
           const method = (Array.isArray(document.proof) ? document.proof[0] : document.proof).verificationMethod;
           const keyId = method.split('#key-')[1];
           const key = keyId && await strapi.db.query('api::issuer-key.issuer-key').findOne({

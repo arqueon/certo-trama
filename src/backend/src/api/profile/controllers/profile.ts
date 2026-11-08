@@ -52,6 +52,9 @@ export default factories.createCoreController('api::profile.profile', ({ strapi 
    * remain readable for backward compatibility and are claimed on first edit.
    */
   async create(ctx) {
+    // The organization DID slug is set only by the platform (admin panel or
+    // database), never through the REST API (decision 0005).
+    if (ctx.request.body?.data) delete ctx.request.body.data.didSlug;
     if (ctx.state.user) {
       ctx.request.body ??= {};
       ctx.request.body.data ??= {};
@@ -63,6 +66,7 @@ export default factories.createCoreController('api::profile.profile', ({ strapi 
 
   /** Prevent one authenticated user from editing another user's profile. */
   async update(ctx) {
+    if (ctx.request.body?.data) delete ctx.request.body.data.didSlug;
     if (ctx.state.user) {
       const profile: any = await (strapi.entityService as any).findOne('api::profile.profile', ctx.params.id, {
         populate: { owner: { fields: ['id'] } },

@@ -25,7 +25,7 @@ export default ({ strapi }) => ({
     try {
       // Validated before anything is created: a result a verifier cannot
       // resolve must fail the issue, not produce a half-meaningful credential.
-      assertIssuerProfile(achievement.creator?.id)
+      await assertIssuerProfile(strapi, achievement.creator?.id)
       const achievementMetadata0023 = normalizeAchievementMetadata(metadata?.achievement !== undefined ? metadata.achievement : achievement.metadata0023 ?? undefined)
       let subjectMetadata0023 = normalizeSubjectMetadata(metadata?.subject)
       if (recipient.name !== undefined) normalizeSubjectMetadata({ name: recipient.name })
