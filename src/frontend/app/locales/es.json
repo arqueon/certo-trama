@@ -916,8 +916,8 @@
       "issuer": {
         "verified": "Emisor verificado",
         "declared": "Emisor",
-        "domainBefore": "La credencial está firmada con la identidad digital del dominio",
-        "domainAfter": ", que administra el emisor. Así cualquiera puede comprobar quién la emitió y que nadie la cambió, sin pedírselo a nadie.",
+        "domainBefore": "La credencial está firmada con una identidad digital del emisor, publicada en el dominio",
+        "domainAfter": ". Así cualquiera puede comprobar quién la emitió y que nadie la cambió, sin pedírselo a nadie.",
         "noDomain": "La credencial está firmada digitalmente por su emisor.",
         "signature": "Firma:",
         "signature_ok": "auténtica; nadie la ha modificado.",
