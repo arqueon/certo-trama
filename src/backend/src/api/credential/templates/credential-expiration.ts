@@ -1,4 +1,5 @@
 import { emailBrand } from './email-brand'
+import { emailLocale, esc, expirationMessages, formatDate } from './email-i18n'
 interface Achievement {
   name: string
 }
@@ -31,74 +32,73 @@ export const generateCredentialExpirationEmail = ({
   expirationDate,
 }: ExpirationWarningParams) => {
   const brand = emailBrand()
-  const formattedDate = expirationDate.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  })
+  const locale = emailLocale()
+  const m = expirationMessages[locale]
+  const name = esc(achievement.name)
+  const formattedDate = formatDate(expirationDate, locale)
 
-  const urgency = daysLeft <= 1 ? 'expires today' : `expires in ${daysLeft} day${daysLeft === 1 ? '' : 's'}`
-  const subject = `Your credential "${achievement.name}" ${urgency}`
+  const urgency = m.urgency(daysLeft)
+  const subject = m.subject(achievement.name, urgency)
 
   const credentialUrl = `${frontendUrl}/credentials/${encodeURIComponent(credential.credentialId)}`
   const renewUrl = credentialUrl
 
-  const text = `Your credential "${achievement.name}" will expire on ${formattedDate} (${urgency}).
+  const text = `${m.willExpire(achievement.name, formattedDate, urgency)}
 
-View and renew your credential at: ${credentialUrl}
+${m.viewText} ${credentialUrl}
 
-If you have any questions, please contact the issuer or reach us at ${brand.support}
+${m.contactText} ${brand.support}
 
-Thank you,
+${m.thanks}
 ${brand.name}`
 
   const urgencyColor = daysLeft <= 1 ? '#e53e3e' : daysLeft <= 7 ? '#dd6b20' : '#d69e2e'
   const urgencyBg = daysLeft <= 1 ? '#fff5f5' : daysLeft <= 7 ? '#fffaf0' : '#fffff0'
 
   const html = `<!DOCTYPE html>
-<html lang="en">
+<html lang="${locale}">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${subject}</title>
+  <title>${esc(subject)}</title>
 </head>
 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-  <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-    <h1 style="color: white; margin: 0; font-size: 24px;">Credential Expiration Notice</h1>
+  <div style="background: ${brand.color}; padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+    <h1 style="color: white; margin: 0; font-size: 24px;">${m.heading}</h1>
   </div>
 
   <div style="background-color: #f7f9fc; padding: 30px; border-radius: 0 0 10px 10px; border: 1px solid #e2e8f0; border-top: none;">
 
     <div style="background-color: ${urgencyBg}; border-left: 4px solid ${urgencyColor}; padding: 15px; margin-bottom: 25px; border-radius: 0 5px 5px 0;">
       <p style="margin: 0; color: ${urgencyColor}; font-weight: bold;">
-        ⚠️ Your credential <strong>${achievement.name}</strong> ${urgency}.
+        ⚠️ ${m.noticeHtml(name, urgency)}
       </p>
-      <p style="margin: 5px 0 0; color: #4a5568; font-size: 14px;">Expiration date: ${formattedDate}</p>
+      <p style="margin: 5px 0 0; color: #4a5568; font-size: 14px;">${m.dateLabel} ${formattedDate}</p>
     </div>
 
-    ${user ? `<p>Hi ${user.username},</p>` : '<p>Hello,</p>'}
-    <p>This is a reminder that your credential will expire soon. Please take action to renew it if needed.</p>
+    <p>${m.greeting(user ? esc(user.username) : undefined)}</p>
+    <p>${m.reminder}</p>
 
     <div style="background-color: white; border-radius: 8px; padding: 20px; margin: 20px 0; border: 1px solid #e2e8f0;">
-      <h2 style="margin: 0 0 10px; color: #2d3748; font-size: 18px;">${achievement.name}</h2>
-      <p style="margin: 0; color: #718096; font-size: 14px; word-break: break-all;">ID: ${credential.credentialId}</p>
+      <h2 style="margin: 0 0 10px; color: #2d3748; font-size: 18px;">${name}</h2>
+      <p style="margin: 0; color: #718096; font-size: 14px; word-break: break-all;">ID: ${esc(credential.credentialId)}</p>
     </div>
 
     <div style="text-align: center; margin: 30px 0;">
-      <a href="${renewUrl}"
-         style="background-color: #667eea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
-        View &amp; Renew Credential
+      <a href="${esc(renewUrl)}"
+         style="background-color: ${brand.color}; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
+        ${m.button}
       </a>
     </div>
 
     <p style="color: #718096; font-size: 14px;">
-      If you believe this is an error or have questions, please contact the credential issuer or reach us at
-      <a href="mailto:${brand.support}" style="color: #667eea;">${brand.support}</a>.
+      ${m.contactHtml}
+      <a href="mailto:${esc(brand.support)}" style="color: ${brand.color};">${esc(brand.support)}</a>.
     </p>
   </div>
 
   <p style="text-align: center; color: #a0aec0; font-size: 12px; margin-top: 20px;">
-    You received this email because you hold a credential managed through ${brand.name}.
+    ${m.footer(esc(brand.name))}
   </p>
 </body>
 </html>`

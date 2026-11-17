@@ -6,7 +6,7 @@ describe('email brand', () => {
   afterEach(() => { process.env = { ...saved } })
 
   it('keeps the upstream defaults when nothing is configured', () => {
-    expect(emailBrand({})).toEqual({ name: 'Certo', support: 'hello@schroedinger-hat.org' })
+    expect(emailBrand({})).toEqual({ name: 'Certo', support: 'hello@schroedinger-hat.org', color: '#2d3748', linkedInOrgId: undefined })
   })
 
   it('names the configured system and support address in the issuance email', () => {
