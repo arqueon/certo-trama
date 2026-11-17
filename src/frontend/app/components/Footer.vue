@@ -104,7 +104,7 @@ const authStore = useAuthStore()
             class="inline-flex items-center gap-1.5 font-bold"
             :class="{ 'underline hover:text-text-primary': branding.parent.url }"
           >
-            <img v-if="branding.parent.logoUrl" :src="branding.parent.logoUrl" alt="" class="h-5 w-5">
+            <img v-if="branding.parent.logoUrl" :src="branding.parent.logoUrl" alt="" class="h-5 w-5 mc-pie__matriz">
             {{ branding.parent.name }}
           </component>
         </p>

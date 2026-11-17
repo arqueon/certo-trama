@@ -93,10 +93,12 @@ html[data-branded] .portal-card h2 { font-family: var(--mc-fuente-titulos); }
 }
 
 /* Logotipo del pie en modo oscuro: la versión para fondo oscuro si está
-   configurada (NUXT_PUBLIC_BRAND_LOGO_INVERSE_URL); si no, silueta blanca. */
+   configurada (NUXT_PUBLIC_BRAND_LOGO_INVERSE_URL); si no, silueta blanca.
+   El de la organización madre (.mc-pie__matriz) queda igual: se espera un SVG
+   que ya cambia con prefers-color-scheme. */
 .mc-pie__logo-oscuro { display: none; }
 @media (prefers-color-scheme: dark) {
-  html[data-branded][data-tema='b'] footer img:not(.mc-pie__logo-claro):not(.mc-pie__logo-oscuro) { filter: brightness(0) invert(1); }
+  html[data-branded][data-tema='b'] footer img:not(.mc-pie__logo-claro):not(.mc-pie__logo-oscuro):not(.mc-pie__matriz) { filter: brightness(0) invert(1); }
   html[data-branded][data-tema='b'] footer .mc-pie__logo-claro { display: none; }
   html[data-branded][data-tema='b'] footer .mc-pie__logo-oscuro { display: block; }
 }
