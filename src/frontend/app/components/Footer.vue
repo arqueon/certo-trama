@@ -96,6 +96,18 @@ const authStore = useAuthStore()
       <!-- Copyright -->
       <div class="text-center text-text-secondary pt-8 border-t border-gray-200">
         <p>{{ branding.name }} © {{ new Date().getFullYear() }}.</p>
+        <p v-if="branding.parent" class="mt-2 inline-flex items-center gap-2">
+          <span>{{ t('footer.serviceOf') }}</span>
+          <component
+            :is="branding.parent.url ? 'a' : 'span'"
+            :href="branding.parent.url || undefined"
+            class="inline-flex items-center gap-1.5 font-bold"
+            :class="{ 'underline hover:text-text-primary': branding.parent.url }"
+          >
+            <img v-if="branding.parent.logoUrl" :src="branding.parent.logoUrl" alt="" class="h-5 w-5">
+            {{ branding.parent.name }}
+          </component>
+        </p>
         <p class="text-xs mt-1">
           {{ t('footer.builtOn') }}
           <a

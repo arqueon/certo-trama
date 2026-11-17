@@ -18,6 +18,17 @@ export function safeHttpUrl(value: unknown): string {
   } catch { return '' }
 }
 
+// An image path the page may load: same origin ("/marca/logo.svg", not
+// "//host/…") or https. Anything else is dropped.
+export function safeAssetUrl(value: unknown): string {
+  if (typeof value !== 'string') return ''
+  const v = value.trim()
+  if (/^\/(?![/\\])/.test(v)) return v
+  try {
+    return new URL(v).protocol === 'https:' ? v : ''
+  } catch { return '' }
+}
+
 export function credentialIdentifier(input: string): string {
   const value = input.trim()
   if (!/^https?:\/\//i.test(value)) return value

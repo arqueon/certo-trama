@@ -1,4 +1,4 @@
-import { brandActive, contrastText, safeHttpUrl } from '~/utils/portal'
+import { brandActive, contrastText, safeAssetUrl, safeHttpUrl } from '~/utils/portal'
 export interface BrandingConfig {
   active: boolean
   /** Organización que aparece sobre el título de la portada (NUXT_PUBLIC_BRAND_ORGANIZATION); vacía, no se muestra. */
@@ -12,6 +12,8 @@ export interface BrandingConfig {
   /** Emblema (p. ej. el escudo) para la medalla de la portada; si falta, el logotipo. */
   emblemUrl: string
   primaryColor: string
+  /** Organization this instance is a service of (footer); null when not configured. */
+  parent: { name: string, logoUrl: string, url: string } | null
 }
 
 const DEFAULT_BRANDING: BrandingConfig = {
@@ -24,6 +26,7 @@ const DEFAULT_BRANDING: BrandingConfig = {
   logoInverseUrl: '',
   emblemUrl: '',
   primaryColor: '#5AB69F',
+  parent: null,
 }
 
 function validColor(value: string | undefined): string {
@@ -59,5 +62,12 @@ export function useBranding(): BrandingConfig {
     primaryColor: validColor(typeof publicConfig.brandPrimaryColor === 'string'
       ? publicConfig.brandPrimaryColor
       : undefined),
+    parent: text(publicConfig.brandParentName)
+      ? {
+          name: text(publicConfig.brandParentName),
+          logoUrl: safeAssetUrl(publicConfig.brandParentLogoUrl),
+          url: safeHttpUrl(text(publicConfig.brandParentUrl)),
+        }
+      : null,
   }
 }

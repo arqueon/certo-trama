@@ -173,6 +173,12 @@ export default defineNuxtConfig({
       brandLogoInverseUrl: process.env.NUXT_PUBLIC_BRAND_LOGO_INVERSE_URL || '',
       brandEmblemUrl: process.env.NUXT_PUBLIC_BRAND_EMBLEM_URL || '',
       brandPrimaryColor: process.env.NUXT_PUBLIC_BRAND_PRIMARY_COLOR || '',
+      // Organization this instance is a service of, shown in the footer as
+      // "A service of <name>". Empty name: the line is not shown. The logo is
+      // a same-origin path ("/marca/…") or https; the URL, http(s).
+      brandParentName: process.env.NUXT_PUBLIC_BRAND_PARENT_NAME || '',
+      brandParentLogoUrl: process.env.NUXT_PUBLIC_BRAND_PARENT_LOGO_URL || '',
+      brandParentUrl: process.env.NUXT_PUBLIC_BRAND_PARENT_URL || '',
       // Hoja de estilo de la instancia, cargada después de los tokens: redefine
       // las variables --mc-* (colores, fuentes, radios) sin recompilar.
       // Solo rutas del mismo origen («/marca/…») o https.
