@@ -90,7 +90,8 @@ describe('data-portability', () => {
       credentialsReceived: [],
     }
 
-    const result = await service.importProfileData({ id: 5 }, bundle)
+    // Restoring issued credentials is the service role's job (66364cc).
+    const result = await service.importProfileData({ id: 5 }, bundle, { restoreCredentials: true })
 
     expect(result.achievementsImported).toEqual(['my-badge'])
     expect(result.credentialsImported).toEqual(['urn:uuid:issued'])
@@ -120,8 +121,8 @@ describe('data-portability', () => {
       credentialsReceived: [],
     }
 
-    await service.importProfileData({ id: 5 }, bundle)
-    const second = await service.importProfileData({ id: 5 }, bundle)
+    await service.importProfileData({ id: 5 }, bundle, { restoreCredentials: true })
+    const second = await service.importProfileData({ id: 5 }, bundle, { restoreCredentials: true })
 
     expect(second.achievementsSkipped).toEqual(['my-badge'])
     expect(second.credentialsSkipped).toEqual(['urn:uuid:issued'])
@@ -144,6 +145,19 @@ describe('data-portability', () => {
 
     expect(result.credentialsImported).toEqual([])
     expect(achievements).toHaveLength(0)
+    expect(credentials).toHaveLength(0)
+  })
+
+  it('without restoreCredentials, issued credentials are rejected, not imported', async () => {
+    const { strapi, credentials } = createFakeStrapi()
+    const service = dataPortabilityFactory({ strapi })
+    const result = await service.importProfileData({ id: 5 }, {
+      achievementsCreated: [],
+      credentialsIssued: [{ credentialId: 'urn:uuid:forged', achievement: {}, recipient: { email: 'x@example.com' }, proof: [{ jws: 'abc' }] }],
+      credentialsReceived: [],
+    })
+    expect(result.credentialsImported).toEqual([])
+    expect(result.credentialsRejected).toEqual(['urn:uuid:forged'])
     expect(credentials).toHaveLength(0)
   })
 })
