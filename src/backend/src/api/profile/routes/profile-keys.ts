@@ -4,15 +4,9 @@
 
 export default {
   routes: [
-    {
-      method: 'GET',
-      path: '/profiles/:id/keys',
-      handler: 'profile.getPublicKeys',
-      config: {
-        auth: false,
-        middlewares: [],
-      },
-    },
+    // GET /profiles/:id/keys was removed (decision 0005): it built the
+    // controller DID from the request's Host header. Keys are published in
+    // the DID documents (/.well-known/did.json, /org/<slug>/did.json).
     // Resolve one specific historical key by id -- what a freshly-issued
     // credential's proof.verificationMethod now points to, so a later key
     // rotation never breaks a standards-compliant external verifier. Works

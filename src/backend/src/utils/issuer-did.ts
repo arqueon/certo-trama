@@ -73,6 +73,26 @@ export async function assertIssuerProfile(strapi: any, profileId: number | strin
   }
 }
 
+/**
+ * Decision 0005: with ISSUER_PLATFORM_ENDORSEMENTS_ONLY=true the platform DID
+ * signs only endorsements of organizations (EndorsementCredential), never a
+ * person's credential. Organizations (profiles with didSlug) are unaffected,
+ * and without the variable nothing changes (single-issuer instances).
+ */
+export function platformEndorsementsOnly(): boolean {
+  return /^(1|true|yes)$/i.test(process.env.ISSUER_PLATFORM_ENDORSEMENTS_ONLY?.trim() || '')
+}
+
+/** assertIssuerProfile, plus the endorsements-only rule for the platform DID. */
+export async function assertMaySign(strapi: any, profileId: number | string, type: unknown) {
+  await assertIssuerProfile(strapi, profileId)
+  if (!platformEndorsementsOnly() || await profileSlug(strapi, profileId)) return
+  const types = Array.isArray(type) ? type : [type]
+  if (!types.includes('EndorsementCredential')) {
+    throw new Error('The platform DID signs only EndorsementCredential (ISSUER_PLATFORM_ENDORSEMENTS_ONLY): issue from an organization profile')
+  }
+}
+
 export async function publicMultikey(did: string, key: { id: number | string; publicKeyJwk: any }) {
   const jwk = key.publicKeyJwk
   if (jwk?.kty !== 'OKP' || jwk.crv !== 'Ed25519' || typeof jwk.x !== 'string'

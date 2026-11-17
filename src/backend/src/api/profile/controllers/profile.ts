@@ -333,38 +333,6 @@ export default factories.createCoreController('api::profile.profile', ({ strapi 
   },
 
   /**
-   * Get all public keys for a profile
-   */
-  async getPublicKeys(ctx) {
-    try {
-      const { id } = ctx.params
-
-      // Find the profile with its public keys
-      const profile = await strapi.entityService.findOne('api::profile.profile', id, {
-        status: 'published',
-        populate: ['publicKey']
-      }) as ProfileWithPublicKeys
-
-      if (!profile) {
-        return ctx.notFound('Profile not found')
-      }
-
-      // Format the keys according to Open Badges 3.0 spec
-      const keys = (profile.publicKey || []).map(key => ({
-        id: key.id,
-        type: key.type || 'Ed25519VerificationKey2020',
-        controller: profile.did || `did:web:${ctx.request.header.host}:profiles:${id}`,
-        publicKeyJwk: key.publicKeyJwk
-      }))
-
-      return keys[0];
-    } catch (err) {
-      console.error('Error fetching public keys:', err)
-      return ctx.internalServerError('Error fetching public keys')
-    }
-  },
-
-  /**
    * Resolve one specific historical signing key by id -- active or
    * retired. This is what a credential's proof.verificationMethod points
    * to once it was signed under the key-rotation scheme, so verifying an

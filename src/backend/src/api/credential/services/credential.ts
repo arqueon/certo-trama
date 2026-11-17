@@ -8,7 +8,7 @@ import { channelAlerts } from './channel-alerts/index'
 import { credentialsIssuedTotal } from '../../../monitoring/metrics'
 import { normalizeResults } from '../../../utils/ob3-results'
 import { signCredential } from '../../../utils/data-integrity'
-import { assertIssuerProfile } from '../../../utils/issuer-did'
+import { assertMaySign } from '../../../utils/issuer-did'
 
 export default ({ strapi }) => ({
   /**
@@ -25,7 +25,7 @@ export default ({ strapi }) => ({
     try {
       // Validated before anything is created: a result a verifier cannot
       // resolve must fail the issue, not produce a half-meaningful credential.
-      await assertIssuerProfile(strapi, achievement.creator?.id)
+      await assertMaySign(strapi, achievement.creator?.id, 'AchievementCredential')
       const achievementMetadata0023 = normalizeAchievementMetadata(metadata?.achievement !== undefined ? metadata.achievement : achievement.metadata0023 ?? undefined)
       let subjectMetadata0023 = normalizeSubjectMetadata(metadata?.subject)
       if (recipient.name !== undefined) normalizeSubjectMetadata({ name: recipient.name })
@@ -434,6 +434,7 @@ export default ({ strapi }) => ({
   // are immutable and may carry either legacy JWS or Data Integrity proofs.
   async generateLegacyProof(issuerId, credentialPayload) {
     const baseUrl = strapi.config.get('server.url', 'http://localhost:1337')
+    await assertMaySign(strapi, issuerId, credentialPayload?.type)
     const payload = { ...credentialPayload }
     delete payload.proof
 

@@ -1,4 +1,4 @@
-import { assertIssuerProfile, isLocalDid, issuerDidDocument, issuerDidFor, orgDid } from '../issuer-did'
+import { assertIssuerProfile, assertMaySign, isLocalDid, issuerDidDocument, issuerDidFor, orgDid } from '../issuer-did'
 import { didWebDocumentUrl } from '../did-web'
 
 // Fake db: profiles by id and slug, keys by profile.
@@ -67,5 +67,16 @@ describe('organization DIDs (decision 0005)', () => {
     expect(isLocalDid(strapi, 'did:web:potenciacomun.example.evil')).toBe(false)
     expect(isLocalDid(strapi, 'did:web:otro.example:org:red-btb')).toBe(false)
     expect(isLocalDid(strapi, undefined)).toBe(false)
+  })
+
+  test('ISSUER_PLATFORM_ENDORSEMENTS_ONLY: the platform DID signs endorsements only, organizations anything', async () => {
+    const { strapi } = fakeStrapi([{ id: 1, didSlug: null }, { id: 7, didSlug: 'red-btb' }])
+    await expect(assertMaySign(strapi, 1, ['VerifiableCredential', 'AchievementCredential'])).resolves.toBeUndefined()
+    process.env.ISSUER_PLATFORM_ENDORSEMENTS_ONLY = 'true'
+    await expect(assertMaySign(strapi, 1, ['VerifiableCredential', 'AchievementCredential'])).rejects.toThrow('only EndorsementCredential')
+    await expect(assertMaySign(strapi, 1, ['VerifiableCredential', 'BitstringStatusListCredential'])).rejects.toThrow('only EndorsementCredential')
+    await expect(assertMaySign(strapi, 1, 'AchievementCredential')).rejects.toThrow('only EndorsementCredential')
+    await expect(assertMaySign(strapi, 1, ['VerifiableCredential', 'EndorsementCredential'])).resolves.toBeUndefined()
+    await expect(assertMaySign(strapi, 7, ['VerifiableCredential', 'AchievementCredential'])).resolves.toBeUndefined()
   })
 })

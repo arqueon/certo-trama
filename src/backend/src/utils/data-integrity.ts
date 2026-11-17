@@ -1,6 +1,6 @@
 import { webcrypto } from 'node:crypto'
 import ob3Context from './contexts/ob3-v3.0.3.json'
-import { assertIssuerProfile, isLocalDid, issuerDidDocument, issuerDidFor, publicMultikey } from './issuer-did'
+import { assertMaySign, isLocalDid, issuerDidDocument, issuerDidFor, publicMultikey } from './issuer-did'
 import { resolveDidWeb } from './did-web'
 
 export const OB3_CONTEXTS = ['https://www.w3.org/ns/credentials/v2',
@@ -36,7 +36,7 @@ export async function dataIntegritySuite(signer?: any) {
 }
 
 export async function signCredential(strapi: any, profileId: number | string, document: any) {
-  await assertIssuerProfile(strapi, profileId)
+  await assertMaySign(strapi, profileId, document.type)
   const did = await issuerDidFor(strapi, profileId)
   if ((document.issuer?.id || document.issuer) !== did) throw new Error('Signing issuer must be the did:web of the signing profile')
   const { privateKey, publicKeyJwk, keyId } = await strapi.service('api::profile.issuer-keys').getOrCreateKeyPair(profileId)
